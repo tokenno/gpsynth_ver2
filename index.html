@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GPSynthesizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/gpsynth_ver2/manifest.json">
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
 </head>
 <body class="bg-black text-gray-100 min-h-screen flex flex-col">
   <header class="text-center py-6">
@@ -111,10 +117,24 @@
   </main>
 
   <footer class="text-center py-4 bg-gray-900">
-    <a href="http://tokeno.net" class="text-blue-400 hover:text-blue-300">tokeno.net</a> |
+    <a href="https://tokeno.net" class="text-blue-400 hover:text-blue-300">tokeno.net</a> |
     <a href="https://github.com" class="text-blue-400 hover:text-blue-300">Github</a>
   </footer>
 
   <script src="fm-synth.js"></script>
+  <!-- Register Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch((error) => {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
