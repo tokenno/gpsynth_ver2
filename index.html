@@ -3,100 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GPSynthesizer</title>
+  <title>GPSynth</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <!-- PWA Manifest -->
   <link rel="manifest" href="/gpsynth_ver2/manifest.json">
-  <link rel="manifest" href="/gpsynth_ver2/sw.js">
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+      overflow-x: hidden;
+    }
+    .glow {
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    .neon-text {
+      text-shadow: 0 0 5px rgba(0, 255, 255, 0.8), 0 0 10px rgba(0, 255, 255, 0.5);
+    }
+    .btn-neon {
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    .btn-neon:hover {
+      border-color: #00ffff;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+      transform: translateY(-2px);
+    }
+    .slider-neon::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #00ffff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+      cursor: pointer;
+    }
+    .slider-neon::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: #00ffff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+      cursor: pointer;
+    }
+    .compass-glow {
+      filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.8; }
+    }
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+  </style>
 </head>
-<body class="bg-black text-gray-100 min-h-screen flex flex-col">
-  <header class="text-center py-6">
-    <h1 class="text-4xl font-bold text-white">GPSynthesizer</h1>
-    <p class="text-lg text-gray-400 mt-2">A web-based audio app generating dynamic FM synthesis sounds modulated by real-world inputs.</p>
+<body class="text-gray-100 min-h-screen flex flex-col">
+  <header class="text-center py-8 relative">
+    <h1 class="text-5xl font-bold neon-text text-cyan-400">GPSynth</h1>
+    <p class="text-md text-gray-500 mt-2 tracking-widest">A sonic exploration driven by the world around you.</p>
+    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-cyan-500/10 to-transparent -z-10"></div>
   </header>
 
   <main class="flex-grow container mx-auto px-4 py-6">
     <section class="mb-8">
-      <div id="status" class="status p-4 rounded-lg text-center font-semibold transition-colors duration-300 bg-gray-800">
+      <div id="status" class="status p-4 rounded-lg text-center font-semibold bg-gray-900/80 backdrop-blur-sm glow text-cyan-300">
         Status: Ready
       </div>
     </section>
 
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold text-white mb-4">Sensor Controls</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <h3 class="text-lg font-medium text-white mb-2">General Controls</h3>
-          <div class="flex flex-wrap gap-2">
-            <button id="testBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors duration-200">Test Audio</button>
-            <button id="lockBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors duration-200">Lock GPS</button>
-            <button id="stopBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors duration-200">Stop Audio</button>
-            <button id="toggleDirectionBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors duration-200">Invert Frequency</button>
-          </div>
-        </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <h3 class="text-lg font-medium text-white mb-2">Orientation</h3>
-          <button id="orientationBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full transition-colors duration-200">Toggle Orientation</button>
-        </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <h3 class="text-lg font-medium text-white mb-2">Accelerometer</h3>
-          <button id="motionBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full transition-colors duration-200">Toggle Accelerometer</button>
-        </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <h3 class="text-lg font-medium text-white mb-2">Camera</h3>
-          <button id="cameraBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full transition-colors duration-200">Toggle Camera</button>
-          <video id="video" width="100" height="100" autoplay class="hidden mt-2 mx-auto"></video>
-        </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <h3 class="text-lg font-medium text-white mb-2">Light Sensor</h3>
-          <button id="lightSensorBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full transition-colors duration-200">Toggle Light Sensor</button>
-        </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <h3 class="text-lg font-medium text-white mb-2">Microphone</h3>
-          <button id="micBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full transition-colors duration-200">Toggle Microphone</button>
-        </div>
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold neon-text text-cyan-400 mb-6">Control Matrix</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <button id="lockBtn" class="btn-neon bg-gray-900/90 text-cyan-300 px-4 py-2 rounded-lg hover:text-cyan-200" aria-label="Lock GPS position">Lock GPS</button>
+        <button id="testBtn" class="btn-neon bg-gray-900/90 text-cyan-300 px-4 py-2 rounded-lg hover:text-cyan-200" aria-label="Test audio output">Test Sound</button>
+        <button id="stopBtn" class="btn-neon bg-gray-900/90 text-red-400 px-4 py-2 rounded-lg hover:text-red-300" aria-label="Stop audio">Stop</button>
+        <button id="toggleDirectionBtn" class="btn-neon bg-gray-900/90 text-cyan-300 px-4 py-2 rounded-lg hover:text-cyan-200" aria-label="Invert frequency mapping">Invert Freq</button>
+        <button id="orientationBtn" class="btn-neon bg-gray-900/90 text-cyan-300 px-4 py-2 rounded-lg hover:text-cyan-200" aria-label="Toggle device orientation">Orientation</button>
+        <button id="motionBtn" class="btn-neon bg-gray-900/90 text-cyan-300 px-4 py-2 rounded-lg hover:text-cyan-200" aria-label="Toggle accelerometer">Motion</button>
+        <button id="cameraBtn" class="btn-neon bg-gray-900/90 text-cyan-300 px-4 py-2 rounded-lg hover:text-cyan-200" aria-label="Toggle camera input">Camera</button>
+        <button id="lightSensorBtn" class="btn-neon bg-gray-900/90 text-cyan-300 px-4 py-2 rounded-lg hover:text-cyan-200" aria-label="Toggle light sensor">Light</button>
+        <button id="micBtn" class="btn-neon bg-gray-900/90 text-cyan-300 px-4 py-2 rounded-lg hover:text-cyan-200" aria-label="Toggle microphone input">Mic</button>
       </div>
+      <video id="video" width="100" height="100" autoplay class="hidden mt-4 mx-auto rounded-lg glow"></video>
     </section>
 
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold text-white mb-4">Audio Settings</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <label for="baseFreq" class="block text-sm font-medium text-gray-300">Base Frequency (Hz)</label>
-          <input type="range" id="baseFreq" min="100" max="1000" value="440" step="1" class="w-full mt-1 accent-blue-600">
-          <span id="baseFreqValue" class="block mt-1 text-gray-400">440 Hz</span>
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold neon-text text-cyan-400 mb-6">Sound Forge</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="bg-gray-900/80 p-4 rounded-lg glow">
+          <label for="baseFreq" class="block text-sm font-medium text-gray-400">Base Frequency</label>
+          <input type="range" id="baseFreq" min="100" max="1000" value="440" step="1" class="w-full mt-1 slider-neon">
+          <span id="baseFreqValue" class="block mt-1 text-cyan-400">440 Hz</span>
         </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <label for="modRange" class="block text-sm font-medium text-gray-300">Modulation Range (Hz)</label>
-          <input type="range" id="modRange" min="0" max="500" value="200" step="1" class="w-full mt-1 accent-blue-600">
-          <span id="modRangeValue" class="block mt-1 text-gray-400">200 Hz</span>
+        <div class="bg-gray-900/80 p-4 rounded-lg glow">
+          <label for="modRange" class="block text-sm font-medium text-gray-400">Modulation Range</label>
+          <input type="range" id="modRange" min="0" max="500" value="200" step="1" class="w-full mt-1 slider-neon">
+          <span id="modRangeValue" class="block mt-1 text-cyan-400">200 Hz</span>
         </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <label for="modRate" class="block text-sm font-medium text-gray-300">Modulator Rate (Hz)</label>
-          <input type="range" id="modRate" min="0.1" max="50" value="4" step="0.1" class="w-full mt-1 accent-blue-600">
-          <span id="modRateValue" class="block mt-1 text-gray-400">4 Hz</span>
+        <div class="bg-gray-900/80 p-4 rounded-lg glow">
+          <label for="modRate" class="block text-sm font-medium text-gray-400">Modulator Rate</label>
+          <input type="range" id="modRate" min="0.1" max="50" value="4" step="0.1" class="w-full mt-1 slider-neon">
+          <span id="modRateValue" class="block mt-1 text-cyan-400">4 Hz</span>
         </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <label for="lpfCutoff" class="block text-sm font-medium text-gray-300">Low Pass Filter Cutoff (Hz)</label>
-          <input type="range" id="lpfCutoff" min="100" max="5000" value="2000" step="1" class="w-full mt-1 accent-blue-600">
-          <span id="lpfCutoffValue" class="block mt-1 text-gray-400">2000 Hz</span>
+        <div class="bg-gray-900/80 p-4 rounded-lg glow">
+          <label for="lpfCutoff" class="block text-sm font-medium text-gray-400">LPF Cutoff</label>
+          <input type="range" id="lpfCutoff" min="100" max="5000" value="2000" step="1" class="w-full mt-1 slider-neon">
+          <span id="lpfCutoffValue" class="block mt-1 text-cyan-400">2000 Hz</span>
         </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <label for="waveform" class="block text-sm font-medium text-gray-300">Waveform</label>
-          <select id="waveform" class="w-full mt-1 bg-gray-800 text-gray-100 border border-gray-700 rounded p-2">
+        <div class="bg-gray-900/80 p-4 rounded-lg glow">
+          <label for="waveform" class="block text-sm font-medium text-gray-400">Waveform</label>
+          <select id="waveform" class="w-full mt-1 bg-gray-800 text-cyan-400 border border-gray-700 rounded p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
             <option value="sine">Sine</option>
             <option value="square">Square</option>
             <option value="triangle">Triangle</option>
             <option value="sawtooth">Sawtooth</option>
           </select>
         </div>
-        <div class="bg-gray-900 p-4 rounded-lg">
-          <label for="distanceBand" class="block text-sm font-medium text-gray-300">Distance Band (meters)</label>
-          <select id="distanceBand" class="w-full mt-1 bg-gray-800 text-gray-100 border border-gray-700 rounded p-2">
+        <div class="bg-gray-900/80 p-4 rounded-lg glow">
+          <label for="distanceBand" class="block text-sm font-medium text-gray-400">Distance Band</label>
+          <select id="distanceBand" class="w-full mt-1 bg-gray-800 text-cyan-400 border border-gray-700 rounded p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
             <option value="10">10 meters</option>
             <option value="50" selected>50 meters</option>
             <option value="100">100 meters</option>
@@ -105,21 +136,25 @@
       </div>
     </section>
 
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold text-white mb-4">Navigation</h2>
-      <div id="compass-section" class="bg-gray-900 p-4 rounded-lg flex justify-center items-center flex-col" style="display: none;">
-        <svg id="compass" width="200" height="200" class="mb-4">
-          <circle cx="100" cy="100" r="90" fill="#1f2937" stroke="#ffffff" stroke-width="2"/>
-          <path id="direction-arrow" d="M100,10 L90,30 L110,30 Z" fill="#ef4444"/>
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold neon-text text-cyan-400 mb-6">Navigation Core</h2>
+      <div id="compass-section" class="bg-gray-900/80 p-6 rounded-lg flex justify-center items-center flex-col backdrop-blur-sm glow" style="display: none;">
+        <svg id="compass" width="200" height="200" class="mb-4 compass-glow">
+          <circle cx="100" cy="100" r="90" fill="none" stroke="#00ffff" stroke-width="3" class="pulse"/>
+          <text x="100" y="20" fill="#00ffff" text-anchor="middle" font-size="12">N</text>
+          <text x="100" y="190" fill="#00ffff" text-anchor="middle" font-size="12">S</text>
+          <text x="20" y="105" fill="#00ffff" text-anchor="middle" font-size="12">W</text>
+          <text x="180" y="105" fill="#00ffff" text-anchor="middle" font-size="12">E</text>
+          <path id="direction-arrow" d="M100,20 L90,40 L110,40 Z" fill="#ff00ff" class="pulse"/>
         </svg>
-        <div id="distance-display" class="text-gray-400 text-lg">0m</div>
+        <div id="distance-display" class="text-cyan-400 text-lg font-bold neon-text">0m</div>
       </div>
     </section>
   </main>
 
-  <footer class="text-center py-4 bg-gray-900">
-    <a href="https://tokeno.net" class="text-blue-400 hover:text-blue-300">tokeno.net</a> |
-    <a href="https://github.com" class="text-blue-400 hover:text-blue-300">Github</a>
+  <footer class="text-center py-4 bg-gray-900/80 backdrop-blur-sm">
+    <a href="http://tokeno.net" class="text-cyan-400 hover:text-cyan-300 neon-text">tokeno.net</a> |
+ 
   </footer>
 
   <script src="fm-synth.js"></script>
@@ -127,7 +162,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/gpsynth_ver2/sw.js')
+        navigator.serviceWorker.register('/sw.js')
           .then((registration) => {
             console.log('Service Worker registered with scope:', registration.scope);
           })
