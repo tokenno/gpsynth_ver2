@@ -1,18 +1,19 @@
 {
-  "name": "GPSynthesizer",
+  "name": "GPSynth",
   "short_name": "GPSynth",
-  "start_url": "index.html",
-  "display": "standalone",
-  "background_color": "#f3f4f6",
-  "theme_color": "#3b82f6",
+  "description": "A web-based audio app generating dynamic FM synthesis sounds with mobile phone sensors.",
+  "start_url": "https://tokenno.github.io/gpsynth_ver2/",
+  "display": "fullscreen",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
