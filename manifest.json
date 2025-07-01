@@ -3,7 +3,7 @@
   "short_name": "GPSynth",
   "description": "A web-based audio app generating dynamic FM synthesis sounds with mobile phone sensors.",
   "start_url": "https://tokenno.github.io/gpsynth_ver2/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#000000",
   "theme_color": "#000000",
   "icons": [
